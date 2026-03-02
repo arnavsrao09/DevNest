@@ -1,14 +1,10 @@
 const layout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <html lang="en">
-      <body>
-        <div>
-          <h1>DashBoard NavBar</h1>
-          {children}
-        </div>
-      </body>
-    </html>
-  )
-}
+    <div>
+      <h1>DashBoard NavBar</h1>
+      {children}
+    </div>
+  );
+};
 
-export default layout
+export default layout;
