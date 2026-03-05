@@ -1,5 +1,5 @@
 import LightRays from "@/components/LightRays";
-
+import Navbar from "@/components/Navbar";
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -7,6 +7,7 @@ export default function RootLayout({
 }>) {
   return (
     <>
+      <Navbar />
       <div className="absolute inset-0 z-[-1] min-h-screen top-0">
         <LightRays
           raysOrigin="top-center-offset"
