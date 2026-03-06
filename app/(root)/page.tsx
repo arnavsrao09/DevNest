@@ -1,6 +1,9 @@
 import React from 'react'
 import ExploreBtn from '@/components/ExploreBtn'
+import EventCard from '@/components/EventCard'
+import { upcomingEvents } from '@/lib/constants'
 const page = () => {
+
   return (
     <section>
       <h1 className='text-center'>The Hub for Every Dev <br /> Event You Can't Miss</h1>
@@ -11,7 +14,11 @@ const page = () => {
       <div className='mt-7 space-y-7'>
         <h3>Featured Events</h3>
         <ul>
-          {}
+          {upcomingEvents.map((event) => (
+            <li key={event.title}>
+              <EventCard {...event} />
+            </li>
+          ))}
         </ul>
       </div>
 
