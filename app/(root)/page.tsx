@@ -13,7 +13,7 @@ const page = () => {
       {/* Featured Events section */}
       <div className='mt-7 space-y-7'>
         <h3>Featured Events</h3>
-        <ul>
+        <ul className='flex list-none justify-evenly'>
           {upcomingEvents.map((event) => (
             <li key={event.title}>
               <EventCard {...event} />
