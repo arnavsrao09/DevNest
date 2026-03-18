@@ -1,18 +1,6 @@
 import mongoose, { Mongoose } from 'mongoose'
 
 /**
- * MongoDB connection URI loaded from environment variables.
- * This must be defined in `.env` (e.g. MONGODB_URI="mongodb+srv://...").
- */
-const MONGODB_URI = process.env.MONGODB_URI
-
-if (!MONGODB_URI) {
-  throw new Error(
-    'Please define the MONGODB_URI environment variable inside .env.local or .env',
-  )
-}
-
-/**
  * Shape of the cached Mongoose connection stored on the `global` object.
  * This prevents creating multiple connections in development when modules
  * are hot-reloaded by Next.js.
@@ -52,12 +40,20 @@ if (!global.mongooseCache) {
  * - Caches the connection promise to avoid creating parallel connections.
  */
 export async function connectToDatabase(): Promise<Mongoose> {
+  // Read env at call-time (works better with serverless + avoids module-load crashes).
+  const uri = process.env.MONGODB_URI
+  if (!uri) {
+    throw new Error(
+      'Please define the MONGODB_URI environment variable inside .env.local or .env',
+    )
+  }
+
   if (cached.conn) {
     return cached.conn
   }
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI as string, {
+    cached.promise = mongoose.connect(uri, {
       bufferCommands: false,
     })
   }
@@ -70,4 +66,7 @@ export async function connectToDatabase(): Promise<Mongoose> {
  * Default export for convenience when importing the connection helper.
  */
 export default connectToDatabase
+
+// Alias requested name (same cached behavior).
+export const connectDB = connectToDatabase
 
