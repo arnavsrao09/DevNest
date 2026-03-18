@@ -31,6 +31,12 @@ const BookingSchema = new Schema<BookingDocument>(
   { timestamps: true, strict: true },
 )
 
+// One booking per event per email (email is normalized to lowercase).
+BookingSchema.index({ eventId: 1, email: 1 }, { unique: true })
+// Common access patterns: list bookings by user, and list bookings for an event by recency.
+BookingSchema.index({ email: 1 })
+BookingSchema.index({ eventId: 1, createdAt: -1 })
+
 BookingSchema.pre('save', async function preSave() {
   // Ensure the referenced event exists to avoid dangling bookings.
   const exists = await Event.exists({ _id: this.eventId })
