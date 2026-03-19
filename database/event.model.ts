@@ -108,6 +108,17 @@ const EventSchema = new Schema<EventDocument>(
 // Unique index for fast slug lookups and to enforce uniqueness at DB level.
 EventSchema.index({ slug: 1 }, { unique: true })
 
+EventSchema.pre('validate', function preValidate() {
+  // Ensure slug exists before required validation runs.
+  // Generate it for new docs, and regenerate only when title changes.
+  if (!this.slug || this.isModified('title')) {
+    assertNonEmpty(this.title, 'title')
+    const nextSlug = slugifyTitle(this.title)
+    if (nextSlug.length === 0) throw new Error('slug is required')
+    this.slug = nextSlug
+  }
+})
+
 EventSchema.pre('save', async function preSave() {
   // Validate required string fields are present and not just whitespace.
   assertNonEmpty(this.title, 'title')
@@ -121,11 +132,6 @@ EventSchema.pre('save', async function preSave() {
   assertNonEmpty(this.mode, 'mode')
   assertNonEmpty(this.audience, 'audience')
   assertNonEmpty(this.organizer, 'organizer')
-
-  // Only regenerate slug when the title changes.
-  if (this.isModified('title')) {
-    this.slug = slugifyTitle(this.title)
-  }
 
   // Normalize date/time to consistent formats before persisting.
   this.date = normalizeIsoDate(this.date)
