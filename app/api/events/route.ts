@@ -20,9 +20,17 @@ export async function POST(req : NextRequest) {
             return NextResponse.json({ message: 'Invalid form data', error: error instanceof Error ? error.message : 'An unknown error occurred' }, { status: 400 });
         }
 
-        const file = formData.get('image') as File;
+        const file = formData.get('image');
 
-        if(!file)return NextResponse.json({ message: 'Image is required' }, { status: 400 });
+        if (!(file instanceof File)) {
+            return NextResponse.json({ message: 'Image file is required' }, { status: 400 });
+        }
+        if (!file.type.startsWith('image/')) {
+            return NextResponse.json({ message: 'Only image uploads are supported' }, { status: 400 });
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            return NextResponse.json({ message: 'Image must be 5MB or smaller' }, { status: 413 });
+        }
 
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
