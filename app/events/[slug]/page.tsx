@@ -1,4 +1,4 @@
-import React from 'react'
+import Image from 'next/image';
 
 const EventDetailsPage = async({params} : { params: Promise<{slug: string}>}) => {
   const { slug } = await params;
@@ -7,9 +7,20 @@ const EventDetailsPage = async({params} : { params: Promise<{slug: string}>}) =>
   const event = data.event;
   console.log(event);
   return (
-    <div>
-      
-    </div>
+    <section id="event">
+      <div className="header">
+        <h1>Event Description</h1>
+        <p className='mt-2'>{event.description}</p>
+      </div>
+      <div className="details">
+        {/* Left Side Content*/}
+
+        {/* Right Side Content*/}
+        <aside className='booking'>
+
+        </aside>
+      </div>
+    </section>
   )
 }
 
