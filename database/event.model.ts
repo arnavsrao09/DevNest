@@ -138,6 +138,28 @@ EventSchema.pre('save', async function preSave() {
   this.time = normalizeTime(this.time)
 })
 
+EventSchema.pre('deleteOne', { document: true, query: false }, async function () {
+  const { Booking } = await import('./booking.model')
+  await Booking.deleteMany({ eventId: this._id })
+})
+
+EventSchema.pre('deleteOne', { document: false, query: true }, async function () {
+  const { Booking } = await import('./booking.model')
+  const docs = await this.model.find(this.getFilter()).select('_id').lean()
+  const ids = docs.map((d) => d._id)
+  if (ids.length > 0) {
+    await Booking.deleteMany({ eventId: { $in: ids } })
+  }
+})
+
+EventSchema.pre('findOneAndDelete', async function () {
+  const { Booking } = await import('./booking.model')
+  const doc = await this.model.findOne(this.getFilter()).select('_id').lean()
+  if (doc?._id) {
+    await Booking.deleteMany({ eventId: doc._id })
+  }
+})
+
 export const Event: EventModel =
   (mongoose.models.Event as EventModel | undefined) ??
   mongoose.model<EventDocument, EventModel>('Event', EventSchema)
