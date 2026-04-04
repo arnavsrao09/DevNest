@@ -1,10 +1,10 @@
-const layout = ({ children }: { children: React.ReactNode }) => {
+import type { ReactNode } from 'react'
+
+export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div>
-      <h1>DashBoard NavBar</h1>
+      <h1>Dashboard NavBar</h1>
       {children}
     </div>
-  );
-};
-
-export default layout;
+  )
+}

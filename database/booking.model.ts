@@ -1,5 +1,4 @@
 import mongoose, { Document, Model, Schema, Types } from 'mongoose'
-import { Event } from './event.model'
 
 export interface BookingDocument extends Document {
   eventId: Types.ObjectId
@@ -36,14 +35,6 @@ BookingSchema.index({ eventId: 1, email: 1 }, { unique: true })
 // Common access patterns: list bookings by user, and list bookings for an event by recency.
 BookingSchema.index({ email: 1 })
 BookingSchema.index({ eventId: 1, createdAt: -1 })
-
-BookingSchema.pre('save', async function preSave() {
-  // Ensure the referenced event exists to avoid dangling bookings.
-  const exists = await Event.exists({ _id: this.eventId })
-  if (!exists) {
-    throw new Error('eventId must reference an existing event')
-  }
-})
 
 export const Booking: BookingModel =
   (mongoose.models.Booking as BookingModel | undefined) ??

@@ -106,6 +106,7 @@ export async function GET(
     await connectToDatabase();
 
     const event = await Event.findOne({ slug })
+      .maxTimeMS(10_000)
       .lean<LeanEvent>()
       .exec();
 
