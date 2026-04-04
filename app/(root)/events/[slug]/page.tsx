@@ -16,7 +16,7 @@ const EventDetailsItem = ({
   label: string
 }) => {
   return (
-    <div className="flex-row-gap-2">
+    <div className="flex flex-row gap-2">
       <Image src={icon} alt={alt} width={17} height={17} />
       <p>{label}</p>
     </div>
@@ -28,8 +28,8 @@ const EventAgenda = ({ agendaItems }: { agendaItems: string[] }) => {
     <div className="agenda">
       <h2>Agenda</h2>
       <ul>
-        {agendaItems.map((item) => (
-          <li key={item}>{item}</li>
+        {agendaItems.map((item, index) => (
+          <li key={`${item}-${index}`}>{item}</li>
         ))}
       </ul>
     </div>
@@ -39,8 +39,8 @@ const EventAgenda = ({ agendaItems }: { agendaItems: string[] }) => {
 const EventTags = ({ tags }: { tags: string[] }) => {
   return (
     <div className="flex flex-row gap-1.5 flex-wrap">
-      {tags.map((tag) => (
-        <div key={tag} className="pill">
+      {tags.map((tag, index) => (
+        <div key={`${tag}-${index}`} className="pill">
           {tag}
         </div>
       ))}
@@ -81,12 +81,12 @@ const EventDetailsPage = async ({
             className="banner"
           />
 
-          <div className="flex-col-gap-2">
+          <div className="flex flex-col gap-2">
             <h2>Overview</h2>
             <p>{event.overview}</p>
           </div>
 
-          <section className="flex-col-gap-2">
+          <section className="flex flex-col gap-2">
             <h2>Event Details</h2>
             <EventDetailsItem
               icon="/icons/calendar.svg"
@@ -122,7 +122,7 @@ const EventDetailsPage = async ({
 
           <EventAgenda agendaItems={agendaItems} />
 
-          <section className="flex-col-gap-2">
+          <section className="flex flex-col gap-2">
             <h2>About the Organizer</h2>
             <p>{event.organizer}</p>
           </section>

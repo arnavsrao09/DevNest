@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from 'mongoose'
+import mongoose, { Document, Model, Schema, Types } from 'mongoose'
 
 export type EventMode = 'online' | 'offline' | 'hybrid' | (string & {})
 
@@ -138,25 +138,57 @@ EventSchema.pre('save', async function preSave() {
   this.time = normalizeTime(this.time)
 })
 
-EventSchema.pre('deleteOne', { document: true, query: false }, async function () {
+/** Stash event _id(s) on Query between pre/post middleware for booking cascade. */
+const CASCADE_EVENT_IDS = Symbol('devnest.cascadeEventIds')
+const CASCADE_SINGLE_EVENT_ID = Symbol('devnest.cascadeSingleEventId')
+
+type QueryWithCascade = mongoose.Query<unknown, EventDocument> & {
+  [CASCADE_EVENT_IDS]?: Types.ObjectId[]
+  [CASCADE_SINGLE_EVENT_ID]?: Types.ObjectId
+}
+
+/**
+ * Booking cascade runs after the Event is removed from the DB (post hooks).
+ * If Booking.deleteMany fails afterward, orphaned bookings may remain until a cleanup job runs (eventual consistency).
+ */
+EventSchema.post('deleteOne', { document: true, query: false }, async function () {
   const { Booking } = await import('./booking.model')
   await Booking.deleteMany({ eventId: this._id })
 })
 
 EventSchema.pre('deleteOne', { document: false, query: true }, async function () {
-  const { Booking } = await import('./booking.model')
-  const docs = await this.model.find(this.getFilter()).select('_id').lean()
-  const ids = docs.map((d) => d._id)
-  if (ids.length > 0) {
+  const docs = await this.model
+    .find(this.getFilter())
+    .select('_id')
+    .limit(1)
+    .lean()
+  const q = this as QueryWithCascade
+  q[CASCADE_EVENT_IDS] = docs.map((d) => d._id)
+})
+
+EventSchema.post('deleteOne', { document: false, query: true }, async function () {
+  const q = this as QueryWithCascade
+  const ids = q[CASCADE_EVENT_IDS]
+  delete q[CASCADE_EVENT_IDS]
+  if (ids?.length) {
+    const { Booking } = await import('./booking.model')
     await Booking.deleteMany({ eventId: { $in: ids } })
   }
 })
 
 EventSchema.pre('findOneAndDelete', async function () {
-  const { Booking } = await import('./booking.model')
   const doc = await this.model.findOne(this.getFilter()).select('_id').lean()
-  if (doc?._id) {
-    await Booking.deleteMany({ eventId: doc._id })
+  const q = this as QueryWithCascade
+  q[CASCADE_SINGLE_EVENT_ID] = doc?._id
+})
+
+EventSchema.post('findOneAndDelete', async function () {
+  const q = this as QueryWithCascade
+  const id = q[CASCADE_SINGLE_EVENT_ID]
+  delete q[CASCADE_SINGLE_EVENT_ID]
+  if (id) {
+    const { Booking } = await import('./booking.model')
+    await Booking.deleteMany({ eventId: id })
   }
 })
 

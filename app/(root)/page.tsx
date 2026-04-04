@@ -6,7 +6,7 @@ import { getEvents, type LeanEvent } from '@/lib/actions/event.actions'
 
 export const dynamic = 'force-dynamic'
 
-const page = async () => {
+async function HomePage() {
   const { events } = await getEvents({ page: 1, limit: 50 })
 
   return (
@@ -36,4 +36,4 @@ const page = async () => {
   )
 }
 
-export default page
+export default HomePage

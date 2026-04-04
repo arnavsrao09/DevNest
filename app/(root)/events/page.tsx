@@ -5,8 +5,24 @@ import { getEvents, type LeanEvent } from '@/lib/actions/event.actions'
 
 export const dynamic = 'force-dynamic'
 
-export default async function EventsPage() {
-  const { events, page, totalPages } = await getEvents({ page: 1, limit: 24 })
+function parsePageParam(raw: string | undefined, fallback: number): number {
+  if (raw === undefined) return fallback
+  const n = Number.parseInt(raw, 10)
+  if (!Number.isFinite(n) || n < 1) return fallback
+  return n
+}
+
+export default async function EventsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
+  const resolved = await searchParams
+  const requestedPage = parsePageParam(resolved.page, 1)
+  const { events, page, totalPages } = await getEvents({
+    page: requestedPage,
+    limit: 24,
+  })
 
   return (
     <section className="space-y-6">
@@ -23,9 +39,19 @@ export default async function EventsPage() {
         )}
       </ul>
       {totalPages > 1 && (
-        <p className="text-sm text-muted-foreground">
-          Page {page} of {totalPages}
-        </p>
+        <div className="flex flex-wrap items-center gap-4 text-sm">
+          <span>
+            Page {page} of {totalPages}
+          </span>
+          <nav className="flex gap-3" aria-label="Events pagination">
+            {page > 1 ? (
+              <Link href={`/events?page=${page - 1}`}>Previous</Link>
+            ) : null}
+            {page < totalPages ? (
+              <Link href={`/events?page=${page + 1}`}>Next</Link>
+            ) : null}
+          </nav>
+        </div>
       )}
       <p>
         <Link href="/events/create">Create an event</Link>

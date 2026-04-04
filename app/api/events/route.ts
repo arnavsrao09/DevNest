@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
           },
           (error, result) => {
             if (error) reject(error)
-            else if (!result?.secure_url || !result?.public_id) {
+            else if (!result || !result.secure_url || !result.public_id) {
               reject(new Error('Upload result missing required fields'))
             } else {
               resolve({
@@ -248,7 +248,17 @@ export async function GET(req: NextRequest) {
       { status: 200 },
     )
   } catch (error) {
-    console.error('Error fetching events:', error)
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
+    const errorId = randomUUID()
+    const err = error instanceof Error ? error : new Error(String(error))
+    console.error(
+      '[GET /api/events]',
+      errorId,
+      err.message,
+      err.stack ?? '(no stack)',
+    )
+    return NextResponse.json(
+      { message: 'Internal server error', errorId },
+      { status: 500 },
+    )
   }
 }
