@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { getEventBySlug } from '@/lib/actions/event.actions'
 import { parseStringArrayField } from '@/lib/utils'
+import BookEvent from '@/components/BookEvent'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,12 +25,13 @@ const EventDetailsItem = ({
 }
 
 const EventAgenda = ({ agendaItems }: { agendaItems: string[] }) => {
+  if (agendaItems.length === 0) return null
   return (
     <div className="agenda">
       <h2>Agenda</h2>
       <ul>
         {agendaItems.map((item, index) => (
-          <li key={`${item}-${index}`}>{item}</li>
+          <li key={`${index}-${item.slice(0, 48)}`}>{item}</li>
         ))}
       </ul>
     </div>
@@ -37,14 +39,18 @@ const EventAgenda = ({ agendaItems }: { agendaItems: string[] }) => {
 }
 
 const EventTags = ({ tags }: { tags: string[] }) => {
+  if (tags.length === 0) return null
   return (
-    <div className="flex flex-row gap-1.5 flex-wrap">
-      {tags.map((tag, index) => (
-        <div key={`${tag}-${index}`} className="pill">
-          {tag}
-        </div>
-      ))}
-    </div>
+    <section className="flex flex-col gap-2">
+      <h2>Tags</h2>
+      <div className="event-tags-pills" role="list">
+        {tags.map((tag, index) => (
+          <span key={`${index}-${tag.slice(0, 48)}`} className="event-tag-pill" role="listitem">
+            {tag}
+          </span>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -62,6 +68,8 @@ const EventDetailsPage = async ({
 
   const agendaItems = parseStringArrayField(event.agenda, [])
   const tags = parseStringArrayField(event.tags, [])
+
+  const bookings = 10
 
   return (
     <section id="event">
@@ -132,7 +140,17 @@ const EventDetailsPage = async ({
 
         {/* Right Side Content*/}
         <aside className="booking">
-          <p className="text-lg font-semibold">Book Event</p>
+          <div className="signup-card">
+            <h2>Book Your Spot</h2>
+            {bookings > 0 ?
+            (
+            <p className="text-sm">Join {bookings} people who have already booked their spot!</p>
+            )
+            :
+            (<p className="text-sm">Be the first to book your spot!</p>)
+          }
+          <BookEvent/>
+          </div>
         </aside>
       </div>
     </section>
