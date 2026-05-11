@@ -85,3 +85,18 @@ export async function getEventBySlug(slug: string): Promise<LeanEvent | null> {
 
   return event
 }
+
+const getSimilarEventsBySlug = async (slug: string) => {
+  try{
+    await connectToDatabase()
+
+    const event = await Event.findOne({ slug })
+
+    return await Event.find({_id : {$ne : event?._id}, tags : {$in : event?.tags ?? []}})
+  }
+  catch(error){
+    console.error("Error fetching similar events by slug:", error);
+    return [];
+  }
+}
+export default getSimilarEventsBySlug;
