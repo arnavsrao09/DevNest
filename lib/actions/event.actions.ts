@@ -8,6 +8,7 @@ const DEFAULT_PAGE = 1
 const DEFAULT_LIMIT = 20
 const MAX_LIMIT = 100
 const QUERY_MAX_TIME_MS = 10_000
+const SIMILAR_EVENTS_LIMIT = 10
 
 /** Matches URL slugs: lowercase segments separated by single hyphens. */
 const SLUG_PARAM_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u
@@ -86,17 +87,62 @@ export async function getEventBySlug(slug: string): Promise<LeanEvent | null> {
   return event
 }
 
+function resolveTagsArray(raw: unknown): string[] {
+  if (Array.isArray(raw)) {
+    // Each element might itself be a JSON-stringified array — flatten one level.
+    const flat: string[] = []
+    for (const item of raw) {
+      if (typeof item === 'string') {
+        try {
+          const parsed = JSON.parse(item)
+          if (Array.isArray(parsed)) {
+            flat.push(...parsed.filter((s): s is string => typeof s === 'string'))
+            continue
+          }
+        } catch {
+          // not JSON — treat as plain string
+        }
+        flat.push(item)
+      }
+    }
+    return [...new Set(flat)]
+  }
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) return parsed.filter((s): s is string => typeof s === 'string')
+    } catch {
+      // not JSON
+    }
+  }
+  return []
+}
+
 const getSimilarEventsBySlug = async (slug: string) => {
-  try{
+  if (typeof slug !== 'string' || !isValidSlugParam(slug)) {
+    return []
+  }
+
+  try {
     await connectToDatabase()
 
     const event = await Event.findOne({ slug })
+      .maxTimeMS(QUERY_MAX_TIME_MS)
+      .lean<LeanEvent | null>()
+      .exec()
+    if (!event) return []
 
-    return await Event.find({_id : {$ne : event?._id}, tags : {$in : event?.tags ?? []}})
-  }
-  catch(error){
-    console.error("Error fetching similar events by slug:", error);
-    return [];
+    const tags = resolveTagsArray(event.tags)
+    if (tags.length === 0) return []
+
+    return await Event.find({ _id: { $ne: event._id }, tags: { $in: tags } })
+      .maxTimeMS(QUERY_MAX_TIME_MS)
+      .limit(SIMILAR_EVENTS_LIMIT)
+      .lean<LeanEvent[]>()
+      .exec()
+  } catch (error) {
+    console.error('Error fetching similar events by slug:', error)
+    return []
   }
 }
 export default getSimilarEventsBySlug;

@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation'
 import getSimilarEventsBySlug, { getEventBySlug } from '@/lib/actions/event.actions'
 import { parseStringArrayField } from '@/lib/utils'
 import BookEvent from '@/components/BookEvent'
-import type { EventDocument } from '@/database/event.model' 
 import EventCard from '@/components/EventCard'
 export const dynamic = 'force-dynamic'
 
@@ -72,7 +71,7 @@ const EventDetailsPage = async ({
 
   const bookings = 10
 
-  const similarEvents: EventDocument[] = await getSimilarEventsBySlug(slug)
+  const similarEvents = await getSimilarEventsBySlug(slug)
   console.log("similarEvents", similarEvents)
 
   return (
@@ -157,13 +156,13 @@ const EventDetailsPage = async ({
           </div>
         </aside>
       </div>
-      <div className="fklex w-full flex-col gap-4 pt-20">
+      <div className="flex w-full flex-col gap-4 pt-20">
         <h2>Similar Events</h2>
         <div className="events">
           {
             similarEvents.length > 0 ? (
               similarEvents.map((event) => (
-                <EventCard key={event.title} {...event} />
+                <EventCard key={String(event._id)} {...event} />
               ))
             ) : (
               <p>No similar events found</p>
