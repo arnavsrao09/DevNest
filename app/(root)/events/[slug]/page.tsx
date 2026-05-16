@@ -1,10 +1,10 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
-import { getEventBySlug } from '@/lib/actions/event.actions'
+import getSimilarEventsBySlug, { getEventBySlug } from '@/lib/actions/event.actions'
 import { parseStringArrayField } from '@/lib/utils'
 import BookEvent from '@/components/BookEvent'
-
+import EventCard from '@/components/EventCard'
 export const dynamic = 'force-dynamic'
 
 const EventDetailsItem = ({
@@ -70,6 +70,9 @@ const EventDetailsPage = async ({
   const tags = parseStringArrayField(event.tags, [])
 
   const bookings = 10
+
+  const similarEvents = await getSimilarEventsBySlug(slug)
+  console.log("similarEvents", similarEvents)
 
   return (
     <section id="event">
@@ -152,6 +155,20 @@ const EventDetailsPage = async ({
           <BookEvent/>
           </div>
         </aside>
+      </div>
+      <div className="flex w-full flex-col gap-4 pt-20">
+        <h2>Similar Events</h2>
+        <div className="events">
+          {
+            similarEvents.length > 0 ? (
+              similarEvents.map((event) => (
+                <EventCard key={String(event._id)} {...event} />
+              ))
+            ) : (
+              <p>No similar events found</p>
+            )
+          }
+        </div>
       </div>
     </section>
   )

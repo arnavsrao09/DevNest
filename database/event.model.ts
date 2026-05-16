@@ -136,6 +136,24 @@ EventSchema.pre('save', async function preSave() {
   // Normalize date/time to consistent formats before persisting.
   this.date = normalizeIsoDate(this.date)
   this.time = normalizeTime(this.time)
+
+  // If tags/agenda were accidentally stored as a single-element array containing
+  // a JSON string (e.g. ['["react","node"]']), unwrap them to a real string array.
+  const unwrapJsonStringArray = (arr: string[]): string[] => {
+    if (arr.length === 1) {
+      try {
+        const parsed = JSON.parse(arr[0])
+        if (Array.isArray(parsed) && parsed.every((s) => typeof s === 'string')) {
+          return parsed
+        }
+      } catch {
+        // not JSON — leave as-is
+      }
+    }
+    return arr
+  }
+  this.tags = unwrapJsonStringArray(this.tags)
+  this.agenda = unwrapJsonStringArray(this.agenda)
 })
 
 /** Stash event _id(s) on Query between pre/post middleware for booking cascade. */
