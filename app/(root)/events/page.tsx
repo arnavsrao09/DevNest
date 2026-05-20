@@ -3,8 +3,6 @@ import Link from 'next/link'
 import EventCard from '@/components/EventCard'
 import { getEvents, type LeanEvent } from '@/lib/actions/event.actions'
 
-export const dynamic = 'force-dynamic'
-
 function parsePageParam(raw: string | undefined, fallback: number): number {
   if (raw === undefined) return fallback
   const n = Number.parseInt(raw, 10)
