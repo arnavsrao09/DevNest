@@ -11,7 +11,7 @@ const Navbar = () => {
           <p>DevNest</p>
         </Link>
 
-        <ul>
+        <ul className = 'list-none'>
           <li>
             <Link href="/">Home</Link>
           </li>

@@ -5,7 +5,6 @@ import getSimilarEventsBySlug, { getEventBySlug } from '@/lib/actions/event.acti
 import { parseStringArrayField } from '@/lib/utils'
 import BookEvent from '@/components/BookEvent'
 import EventCard from '@/components/EventCard'
-export const dynamic = 'force-dynamic'
 
 const EventDetailsItem = ({
   icon,

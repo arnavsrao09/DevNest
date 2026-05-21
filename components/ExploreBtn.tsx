@@ -17,7 +17,7 @@ const ExploreBtn = () => {
     <button
       type="button"
       id="explore-btn"
-      className="mt-7 mx-auto flex flex-col items-center gap-1"
+      className="mt-7 mx-auto flex items-center gap-2"
       aria-label="Explore events — scroll to the events section"
       onClick={scrollToEvents}
     >
